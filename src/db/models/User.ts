@@ -56,10 +56,3 @@ UserSchema.post("findOneAndUpdate", handleSaveError);
 const User = model<IUser>("user", UserSchema);
 
 export default User;
-
-// User.create({
-//   email: "nata@gmail.com",
-//   fullName: "Nata",
-//   username: "natali",
-//   password: "123456Nata!",
-// });

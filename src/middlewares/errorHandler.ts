@@ -7,7 +7,7 @@ const errorHandler = (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): void => {
   const { status = 500, message } = error;
   res.status(status).json({
     message,

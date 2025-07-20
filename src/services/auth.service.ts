@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 
 import User from "../db/models/User";
-import createToken from "../functions/createToken";
+import { createToken } from "../functions/jsonwebtoken";
 import HttpExeption from "../utils/HttpExeption";
 
 import { UserDocument } from "../db/models/User";
@@ -10,14 +10,6 @@ import { RegisterSchema, LoginSchema } from "../validation/auth.schema";
 interface IUserFind {
   email: string;
 }
-
-// const password = await bcrypt.hash("123456Nata!", 10);
-// await User.create({
-//   email: "nata@gmail.com",
-//   fullName: "Nata",
-//   username: "natali",
-//   password,
-// });
 
 export const register = async (
   payload: RegisterSchema

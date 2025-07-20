@@ -1,5 +1,7 @@
 import jwt from "jsonwebtoken";
 
+import HttpExeption from "../utils/HttpExeption";
+
 import { UserDocument } from "../db/models/User";
 
 export interface IJWTTokenPayload {
@@ -7,9 +9,10 @@ export interface IJWTTokenPayload {
 }
 
 const { JWT_SECRET } = process.env;
-if (typeof JWT_SECRET !== "string") throw new Error("JWT_SECRET not found");
+if (typeof JWT_SECRET !== "string")
+  throw HttpExeption(500, "JWT_SECRET not found");
 
-const createToken = (user: UserDocument): string => {
+export const createToken = (user: UserDocument): string => {
   const payload: IJWTTokenPayload = {
     id: user._id,
   };
@@ -17,4 +20,7 @@ const createToken = (user: UserDocument): string => {
   return token;
 };
 
-export default createToken;
+export const verifyToken = (token: string) => {
+  const { id } = jwt.verify(token, JWT_SECRET) as IJWTTokenPayload;
+  return id;
+};
