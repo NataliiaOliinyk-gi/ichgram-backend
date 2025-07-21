@@ -10,6 +10,7 @@ import {
   logoutController,
   deleteAccountController,
 } from "../controllers/auth.controller";
+
 import { authenticate } from "../middlewares/authorization";
 
 const authRouter: Router = Router();

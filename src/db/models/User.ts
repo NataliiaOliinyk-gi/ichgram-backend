@@ -12,9 +12,15 @@ interface IUser {
   refreshToken?: string;
   biography?: string;
   profilePhoto?: string;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export type UserDocument = IUser & Document<Types.ObjectId>;
+export type PublicUserResponse = Omit<
+  IUser,
+  'password' | 'token' | 'refreshToken'
+>;
 
 const UserSchema = new Schema<IUser>(
   {
