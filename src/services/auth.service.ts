@@ -84,14 +84,6 @@ export const getCurrent = async (user: UserDocument): Promise<string> => {
   return token;
 };
 
-export const logout = async ({ _id }: UserDocument): Promise<void> => {
-  const user: UserDocument | null = await User.findById(_id);
-  if (!user) throw HttpExeption(401, `User not found`);
-  user.token = "";
-  user.refreshToken = "";
-  await user.save();
-};
-
 export const changePassword = async (
   { password, newPassword }: ChangePasswordSchema,
   { _id }: UserDocument
@@ -141,6 +133,16 @@ export const changeEmail = async (
   await user.save();
 
   return user.email;
+};
+
+export const logout = async ({ _id }: UserDocument): Promise<boolean> => {
+  const user: UserDocument | null = await User.findById(_id);
+  if (!user) throw HttpExeption(401, `User not found`);
+  user.token = "";
+  user.refreshToken = "";
+
+  await user.save();
+  return true;
 };
 
 export const deleteAccount = async (
