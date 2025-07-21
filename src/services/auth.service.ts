@@ -1,7 +1,11 @@
 import bcrypt from "bcrypt";
 
 import User from "../db/models/User";
-import { createToken } from "../functions/jsonwebtoken";
+import {
+  createToken,
+  createRefreshToken,
+  verifyRefreshToken,
+} from "../functions/jsonwebtoken";
 import HttpExeption from "../utils/HttpExeption";
 
 import { UserDocument } from "../db/models/User";
@@ -40,5 +44,45 @@ export const login = async ({
   if (!passwordCompare) throw HttpExeption(401, "Password invalid");
 
   const token: string = createToken(user);
+  const refreshToken: string = createRefreshToken(user);
+
+  user.token = token;
+  user.refreshToken = refreshToken;
+  await user.save();
+
   return token;
+};
+
+export const refreshToken = async (
+  refreshToken: string
+): Promise<{ token: string; refreshToken: string }> => {
+  const id = verifyRefreshToken(refreshToken);
+  const user: UserDocument | null = await User.findById(id);
+
+  if (!user || user.refreshToken !== refreshToken)
+    throw HttpExeption(403, "Invalid token");
+  const token: string = createToken(user);
+  const newRefreshToken: string = createRefreshToken(user);
+
+  user.token = token;
+  user.refreshToken = newRefreshToken;
+  await user.save();
+
+  return { token, refreshToken: newRefreshToken };
+};
+
+export const getCurrent = async (user: UserDocument): Promise<string> => {
+  const token: string = createToken(user);
+  user.token = token;
+  await user.save();
+
+  return token;
+};
+
+export const logout = async ({ _id }: UserDocument): Promise<void> => {
+  const user: UserDocument | null = await User.findById(_id);
+  if (!user) throw HttpExeption(401, `User not found`);
+  user.token = "";
+  user.refreshToken = "";
+  await user.save();
 };

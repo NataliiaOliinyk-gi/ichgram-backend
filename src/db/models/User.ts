@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { Schema, model, Document, Types } from "mongoose";
 
 import { emailValidation } from "../../constants/user.constants";
 import { handleSaveError, setUpdateSettings } from "../hooks";
@@ -9,11 +9,12 @@ interface IUser {
   username: string;
   password: string;
   token?: string;
+  refreshToken?: string;
   biography?: string;
   profilePhoto?: string;
 }
 
-export type UserDocument = IUser & Document;
+export type UserDocument = IUser & Document<Types.ObjectId>;
 
 const UserSchema = new Schema<IUser>(
   {
@@ -37,6 +38,9 @@ const UserSchema = new Schema<IUser>(
       required: true,
     },
     token: {
+      type: String,
+    },
+    refreshToken: {
       type: String,
     },
     biography: {
