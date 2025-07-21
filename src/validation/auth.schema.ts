@@ -12,8 +12,28 @@ export const registerSchema = Yup.object({
 export type RegisterSchema = Yup.InferType<typeof registerSchema>;
 
 export const loginSchema = Yup.object({
-    email: emailSchema,
-    password: passwordSchema,
+  email: emailSchema,
+  password: passwordSchema,
 }).noUnknown(true, ({ unknown }) => `Unknown field: ${unknown}`);
 
 export type LoginSchema = Yup.InferType<typeof loginSchema>;
+
+export const changePasswordSchema = Yup.object({
+  password: passwordSchema,
+  newPassword: passwordSchema,
+}).noUnknown(true, ({ unknown }) => `Unknown field: ${unknown}`);
+
+export type ChangePasswordSchema = Yup.InferType<typeof changePasswordSchema>;
+
+export const changeEmailSchema = Yup.object({
+  newEmail: emailSchema,
+  password: passwordSchema,
+}).noUnknown(true, ({ unknown }) => `Unknown field: ${unknown}`);
+
+export type ChangeEmailSchema = Yup.InferType<typeof changeEmailSchema>;
+
+export const deleteAccountSchema = Yup.object({
+  password: passwordSchema,
+}).noUnknown(true, ({ unknown }) => `Unknown field: ${unknown}`);
+
+export type DeleteAccountSchema = Yup.InferType<typeof deleteAccountSchema>;

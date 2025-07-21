@@ -5,7 +5,13 @@ import * as authService from "../services/auth.service";
 import validateBody from "../utils/validateBody";
 import HttpExeption from "../utils/HttpExeption";
 
-import { registerSchema, loginSchema } from "../validation/auth.schema";
+import {
+  registerSchema,
+  loginSchema,
+  changePasswordSchema,
+  changeEmailSchema,
+  deleteAccountSchema,
+} from "../validation/auth.schema";
 import { UserDocument } from "../db/models/User";
 import { AuthenticatedRequest } from "../typescript/interfaces";
 
@@ -28,7 +34,18 @@ export const loginController = async (
 ): Promise<void> => {
   await validateBody(loginSchema, req.body);
 
-  const token: string = await authService.login(req.body);
+  // const token: string = await authService.login(req.body);
+  // res.json({ token });
+
+  const { token, refreshToken } = await authService.login(req.body);
+
+  res.cookie("refreshToken", refreshToken, {
+    httpOnly: true, // захищено від JS
+    secure: true, // лише по HTTPS
+    sameSite: "strict",
+    path: "/",
+    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 днів
+  });
 
   res.json({ token });
 };
@@ -65,6 +82,38 @@ export const getCurrentController = async (
   res.json({ token });
 };
 
+export const changePasswordController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  await validateBody(changePasswordSchema, req.body);
+
+  await authService.changePassword(
+    req.body,
+    (req as AuthenticatedRequest).user
+  );
+
+  res.json({
+    message: "Password change successfully",
+  });
+};
+
+export const changeEmailController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  await validateBody(changeEmailSchema, req.body);
+
+  const result = await authService.changeEmail(
+    req.body,
+    (req as AuthenticatedRequest).user
+  );
+
+  res.json({
+    message: `Email ${result} update successfully`,
+  });
+};
+
 export const logoutController = async (
   req: Request,
   res: Response
@@ -73,5 +122,18 @@ export const logoutController = async (
 
   res.json({
     message: "Logout successfully",
+  });
+};
+
+export const deleteAccountController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  await validateBody(deleteAccountSchema, req.body);
+
+  await authService.deleteAccount(req.body, (req as AuthenticatedRequest).user);
+
+  res.json({
+    message: "User delete successfully",
   });
 };

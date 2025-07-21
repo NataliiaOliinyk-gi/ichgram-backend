@@ -9,7 +9,13 @@ import {
 import HttpExeption from "../utils/HttpExeption";
 
 import { UserDocument } from "../db/models/User";
-import { RegisterSchema, LoginSchema } from "../validation/auth.schema";
+import {
+  RegisterSchema,
+  LoginSchema,
+  ChangePasswordSchema,
+  ChangeEmailSchema,
+  DeleteAccountSchema,
+} from "../validation/auth.schema";
 
 interface IUserFind {
   email: string;
@@ -29,12 +35,11 @@ export const register = async (
 export const login = async ({
   email,
   password,
-}: LoginSchema): Promise<string> => {
+}: LoginSchema): Promise<{ token: string; refreshToken: string }> => {
   const userFind: IUserFind = {
     email,
   };
   const user: UserDocument | null = await User.findOne(userFind);
-
   if (!user) throw HttpExeption(401, `User with email ${email} not found`);
 
   const passwordCompare: boolean = await bcrypt.compare(
@@ -50,7 +55,7 @@ export const login = async ({
   user.refreshToken = refreshToken;
   await user.save();
 
-  return token;
+  return { token, refreshToken };
 };
 
 export const refreshToken = async (
@@ -85,4 +90,72 @@ export const logout = async ({ _id }: UserDocument): Promise<void> => {
   user.token = "";
   user.refreshToken = "";
   await user.save();
+};
+
+export const changePassword = async (
+  { password, newPassword }: ChangePasswordSchema,
+  { _id }: UserDocument
+): Promise<boolean> => {
+  const user: UserDocument | null = await User.findById(_id);
+  if (!user) throw HttpExeption(401, `User not found`);
+
+  const passwordCompare: boolean = await bcrypt.compare(
+    password,
+    user.password
+  );
+  if (!passwordCompare) throw HttpExeption(401, "Password invalid");
+  if (password === newPassword)
+    throw HttpExeption(400, "The new password must not match the old one");
+
+  const hashPassword: string = await bcrypt.hash(newPassword, 10);
+  user.password = hashPassword;
+  user.token = "";
+  user.refreshToken = "";
+  await user.save();
+
+  return true;
+};
+
+export const changeEmail = async (
+  { password, newEmail }: ChangeEmailSchema,
+  { _id }: UserDocument
+): Promise<string> => {
+  const user: UserDocument | null = await User.findById(_id);
+  if (!user) throw HttpExeption(401, `User not found`);
+
+  const passwordCompare: boolean = await bcrypt.compare(
+    password,
+    user.password
+  );
+  if (!passwordCompare) throw HttpExeption(401, "Password invalid");
+
+  if (newEmail === user.email)
+    throw HttpExeption(
+      400,
+      "The new email must be different from the current one"
+    );
+
+  user.email = newEmail;
+  user.token = "";
+  user.refreshToken = "";
+  await user.save();
+
+  return user.email;
+};
+
+export const deleteAccount = async (
+  { password }: DeleteAccountSchema,
+  { _id }: UserDocument
+): Promise<boolean> => {
+  const user: UserDocument | null = await User.findById(_id);
+  if (!user) throw HttpExeption(401, `User not found`);
+
+  const passwordCompare: boolean = await bcrypt.compare(
+    password,
+    user.password
+  );
+  if (!passwordCompare) throw HttpExeption(401, "Password invalid");
+
+  await user.deleteOne();
+  return true;
 };
