@@ -16,6 +16,8 @@
     - email
     - password
 
+    `/forgot-password`
+
   - POST `/refresh-token`
 
   - GET `/current`
@@ -49,8 +51,17 @@
     - biography
     - profilePhoto
 
+`me/create-post`
+
 <!-- GET /api/users — список всіх користувачів (публічний список, можливо з пошуком)
 GET /api/users/:id/followers — підписники
 GET /api/users/:id/following — підписки
 POST /api/users/:id/follow — підписатись
 DELETE /api/users/:id/follow — відписатись -->
+
+Інші роути:
+
+`/search`
+`/explore`
+`/messages`
+`/notifications`

@@ -11,6 +11,12 @@ export const registerSchema = Yup.object({
 
 export type RegisterSchema = Yup.InferType<typeof registerSchema>;
 
+export const verifyCodeSchema = Yup.object({
+    code: Yup.string().trim().required(),
+});
+
+export type VerifyCodeSchema = Yup.InferType<typeof verifyCodeSchema>;
+
 export const loginSchema = Yup.object({
   email: emailSchema,
   password: passwordSchema,

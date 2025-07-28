@@ -7,6 +7,7 @@ import HttpExeption from "../utils/HttpExeption";
 
 import {
   registerSchema,
+  verifyCodeSchema,
   loginSchema,
   changePasswordSchema,
   changeEmailSchema,
@@ -14,6 +15,16 @@ import {
 } from "../validation/auth.schema";
 import { UserDocument } from "../db/models/User";
 import { AuthenticatedRequest } from "../typescript/interfaces";
+
+export interface ILoginResponce {
+  token: string;
+  refreshToken: string;
+  user: {
+    email: string;
+    fullName: string;
+    username: string;
+  };
+}
 
 export const registerController = async (
   req: Request,
@@ -24,8 +35,17 @@ export const registerController = async (
   const result: UserDocument = await authService.register(req.body);
 
   res.status(201).json({
-    message: `User with email ${result.email} has been successfully registered.`,
+    message: `User with email ${result.email} has been successfully registered. Please confirm email with link`,
   });
+};
+
+export const verifyController = async(req: Request, res: Response)=> {
+  await validateBody(verifyCodeSchema, req.body);
+  await authService.verify(req.body.code);
+
+  res.json({
+    message: "User successfully verify"
+  })
 };
 
 export const loginController = async (
@@ -34,10 +54,11 @@ export const loginController = async (
 ): Promise<void> => {
   await validateBody(loginSchema, req.body);
 
-  // const token: string = await authService.login(req.body);
-  // res.json({ token });
+  const result: ILoginResponce = await authService.login(req.body);
 
-  const { token, refreshToken } = await authService.login(req.body);
+  const token = result.token;
+  const refreshToken = result.refreshToken;
+  const user = result.user;
 
   res.cookie("refreshToken", refreshToken, {
     httpOnly: true, // захищено від JS
@@ -47,8 +68,30 @@ export const loginController = async (
     expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 днів
   });
 
-  res.json({ token });
+  res.json({ token, user });
 };
+
+// export const loginController = async (
+//   req: Request,
+//   res: Response
+// ): Promise<void> => {
+//   await validateBody(loginSchema, req.body);
+
+//   // const token: string = await authService.login(req.body);
+//   // res.json({ token });
+
+//   const { token, refreshToken } = await authService.login(req.body);
+
+//   res.cookie("refreshToken", refreshToken, {
+//     httpOnly: true, // захищено від JS
+//     secure: true, // лише по HTTPS
+//     sameSite: "strict",
+//     path: "/",
+//     expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 днів
+//   });
+
+//   res.json({ token });
+// };
 
 export const refreshTokenController = async (
   req: Request,

@@ -9,6 +9,7 @@ export const toPublicUserResponse = (
     username,
     biography,
     profilePhoto,
+    verify,
     createdAt,
     updatedAt,
   } = user;
@@ -19,6 +20,7 @@ export const toPublicUserResponse = (
     username,
     biography,
     profilePhoto,
+    verify,
     createdAt,
     updatedAt,
   };

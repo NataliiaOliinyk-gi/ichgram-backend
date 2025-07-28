@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
   registerController,
   loginController,
+  verifyController,
   getCurrentController,
   refreshTokenController,
   changePasswordController,
@@ -17,6 +18,7 @@ const authRouter: Router = Router();
 
 authRouter.post("/register", registerController);
 authRouter.post("/login", loginController);
+authRouter.post("/verify", verifyController);
 authRouter.post("/refresh-token", refreshTokenController);
 authRouter.get("/current", authenticate, getCurrentController);
 authRouter.put("/change-password", authenticate, changePasswordController);

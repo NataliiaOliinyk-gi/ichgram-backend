@@ -12,6 +12,8 @@ interface IUser {
   refreshToken?: string;
   biography?: string;
   profilePhoto?: string;
+  verificationCode?: string;
+  verify: boolean;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -19,7 +21,7 @@ interface IUser {
 export type UserDocument = IUser & Document<Types.ObjectId>;
 export type PublicUserResponse = Omit<
   IUser,
-  'password' | 'token' | 'refreshToken'
+  "password" | "token" | "refreshToken" | "verificationCode" 
 >;
 
 const UserSchema = new Schema<IUser>(
@@ -54,6 +56,14 @@ const UserSchema = new Schema<IUser>(
     },
     profilePhoto: {
       type: String,
+    },
+    verificationCode: {
+      type: String,
+    },
+    verify: {
+      type: Boolean,
+      default: false,
+      required: true,
     },
   },
   { versionKey: false, timestamps: true }
