@@ -9,6 +9,7 @@ import {
 } from "../functions/jsonwebtoken";
 import HttpExeption from "../utils/HttpExeption";
 import sendEmail from "../utils/sendEmail";
+import generateRandomPassword from "../utils/generatePassword";
 
 import { UserDocument } from "../db/models/User";
 import { ILoginResponce } from "../controllers/auth.controller";
@@ -16,6 +17,7 @@ import {
   RegisterSchema,
   VerifyCodeSchema,
   LoginSchema,
+  ForgotPasswordSchema,
   ChangePasswordSchema,
   ChangeEmailSchema,
   DeleteAccountSchema,
@@ -28,6 +30,8 @@ interface IUserFind {
 const { FRONTEND_URL } = process.env;
 if (typeof FRONTEND_URL !== "string")
   throw HttpExeption(500, "FRONTEND_URL not found");
+
+// User Register
 
 export const register = async (
   payload: RegisterSchema
@@ -51,16 +55,7 @@ export const register = async (
   return user;
 };
 
-// export const register = async (
-//   payload: RegisterSchema
-// ): Promise<UserDocument> => {
-//   const hashPassword: string = await bcrypt.hash(payload.password, 10);
-
-//   return User.create({
-//     ...payload,
-//     password: hashPassword,
-//   });
-// };
+// Verify Email
 
 export const verify = async (code: VerifyCodeSchema): Promise<void> => {
   const user: UserDocument | null = await User.findOne({
@@ -71,6 +66,8 @@ export const verify = async (code: VerifyCodeSchema): Promise<void> => {
   user.verify = true;
   await user.save();
 };
+
+// User Login
 
 export const login = async ({
   email,
@@ -106,31 +103,40 @@ export const login = async ({
   };
 };
 
-// export const login = async ({
-//   email,
-//   password,
-// }: LoginSchema): Promise<{ token: string; refreshToken: string }> => {
-//   const userFind: IUserFind = {
-//     email,
-//   };
-//   const user: UserDocument | null = await User.findOne(userFind);
-//   if (!user) throw HttpExeption(401, `User with email ${email} not found`);
+// User forgot Password
 
-//   const passwordCompare: boolean = await bcrypt.compare(
-//     password,
-//     user.password
-//   );
-//   if (!passwordCompare) throw HttpExeption(401, "Password invalid");
+export const forgotPassword = async ({
+  email,
+}: ForgotPasswordSchema): Promise<UserDocument> => {
+  const userFind: IUserFind = {
+    email,
+  };
+  const user: UserDocument | null = await User.findOne(userFind);
+  if (!user) throw HttpExeption(401, `User with email ${email} not found`);
 
-//   const token: string = createToken(user);
-//   const refreshToken: string = createRefreshToken(user);
+  const tempPassword = generateRandomPassword();
+  const hashPassword: string = await bcrypt.hash(tempPassword, 10);
+  user.password = hashPassword;
+  await user.save();
 
-//   user.token = token;
-//   user.refreshToken = refreshToken;
-//   await user.save();
+  const resetEmail = {
+    to: [user.email],
+    subject: "Reset your password",
+    html: `
+    <p>Hello ${user.fullName},</p>
+    <p>You requested a password reset. Here is your temporary password:</p>
+    <p><strong>${tempPassword}</strong></p>
+    <p>Please log in using this password and then change it in your account settings:</p>
+    <p><strong><a href="${FRONTEND_URL}" target="_blank">Log in</a></strong></p>
+    <p>If you have not requested this password, please ignore this email.</p>
+  `,
+  };
+  await sendEmail(resetEmail);
 
-//   return { token, refreshToken };
-// };
+  return user;
+};
+
+// refreshToken
 
 export const refreshToken = async (
   refreshToken: string
@@ -150,13 +156,28 @@ export const refreshToken = async (
   return { token, refreshToken: newRefreshToken };
 };
 
-export const getCurrent = async (user: UserDocument): Promise<string> => {
+// getCurrent перевірка, чи юзер залогінений
+
+export const getCurrent = async (
+  user: UserDocument
+): Promise<ILoginResponce> => {
   const token: string = createToken(user);
+  const refreshToken: string = createRefreshToken(user);
   user.token = token;
+  user.refreshToken = refreshToken;
   await user.save();
 
-  return token;
+  return {
+    token,
+    user: {
+      email: user.email,
+      fullName: user.fullName,
+      username: user.username,
+    },
+  };
 };
+
+// User change Password
 
 export const changePassword = async (
   { password, newPassword }: ChangePasswordSchema,
@@ -181,6 +202,8 @@ export const changePassword = async (
 
   return true;
 };
+
+// User change Email
 
 export const changeEmail = async (
   { password, newEmail }: ChangeEmailSchema,
@@ -209,6 +232,8 @@ export const changeEmail = async (
   return user.email;
 };
 
+// User Logout
+
 export const logout = async ({ _id }: UserDocument): Promise<boolean> => {
   const user: UserDocument | null = await User.findById(_id);
   if (!user) throw HttpExeption(401, `User not found`);
@@ -218,6 +243,8 @@ export const logout = async ({ _id }: UserDocument): Promise<boolean> => {
   await user.save();
   return true;
 };
+
+// User delete Account
 
 export const deleteAccount = async (
   { password }: DeleteAccountSchema,
@@ -235,3 +262,40 @@ export const deleteAccount = async (
   await user.deleteOne();
   return true;
 };
+
+// export const register = async (
+//   payload: RegisterSchema
+// ): Promise<UserDocument> => {
+//   const hashPassword: string = await bcrypt.hash(payload.password, 10);
+
+//   return User.create({
+//     ...payload,
+//     password: hashPassword,
+//   });
+// };
+
+// export const login = async ({
+//   email,
+//   password,
+// }: LoginSchema): Promise<{ token: string; refreshToken: string }> => {
+//   const userFind: IUserFind = {
+//     email,
+//   };
+//   const user: UserDocument | null = await User.findOne(userFind);
+//   if (!user) throw HttpExeption(401, `User with email ${email} not found`);
+
+//   const passwordCompare: boolean = await bcrypt.compare(
+//     password,
+//     user.password
+//   );
+//   if (!passwordCompare) throw HttpExeption(401, "Password invalid");
+
+//   const token: string = createToken(user);
+//   const refreshToken: string = createRefreshToken(user);
+
+//   user.token = token;
+//   user.refreshToken = refreshToken;
+//   await user.save();
+
+//   return { token, refreshToken };
+// };

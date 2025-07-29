@@ -9,6 +9,7 @@ import {
   registerSchema,
   verifyCodeSchema,
   loginSchema,
+  forgotPasswordSchema,
   changePasswordSchema,
   changeEmailSchema,
   deleteAccountSchema,
@@ -18,13 +19,15 @@ import { AuthenticatedRequest } from "../typescript/interfaces";
 
 export interface ILoginResponce {
   token: string;
-  refreshToken: string;
+  refreshToken?: string;
   user: {
     email: string;
     fullName: string;
     username: string;
   };
 }
+
+// User Register
 
 export const registerController = async (
   req: Request,
@@ -35,18 +38,23 @@ export const registerController = async (
   const result: UserDocument = await authService.register(req.body);
 
   res.status(201).json({
-    message: `User with email ${result.email} has been successfully registered. Please confirm email with link`,
+    message: `Welcome! You have successfully registered with the email ${result.email}. \nPlease confirm your email by clicking the link sent to your inbox.`,
   });
 };
 
-export const verifyController = async(req: Request, res: Response)=> {
+// Verify Email
+
+export const verifyController = async (req: Request, res: Response): Promise<void> => {
   await validateBody(verifyCodeSchema, req.body);
   await authService.verify(req.body.code);
 
   res.json({
-    message: "User successfully verify"
-  })
+    message:
+      "Email successfully verified. \nPlease login with your credentials.",
+  });
 };
+
+// User Login
 
 export const loginController = async (
   req: Request,
@@ -71,27 +79,24 @@ export const loginController = async (
   res.json({ token, user });
 };
 
-// export const loginController = async (
-//   req: Request,
-//   res: Response
-// ): Promise<void> => {
-//   await validateBody(loginSchema, req.body);
 
-//   // const token: string = await authService.login(req.body);
-//   // res.json({ token });
+// User forgot Password
 
-//   const { token, refreshToken } = await authService.login(req.body);
+export const forgotPasswordController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  await validateBody(forgotPasswordSchema, req.body);
 
-//   res.cookie("refreshToken", refreshToken, {
-//     httpOnly: true, // захищено від JS
-//     secure: true, // лише по HTTPS
-//     sameSite: "strict",
-//     path: "/",
-//     expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 днів
-//   });
+  const result: UserDocument = await authService.forgotPassword(req.body);
 
-//   res.json({ token });
-// };
+  res.json({
+    message:
+      `An email ${result.email} with a temporary password has been sent. Please follow the instructions in the email.`,
+  });
+};
+
+// refreshToken
 
 export const refreshTokenController = async (
   req: Request,
@@ -115,15 +120,23 @@ export const refreshTokenController = async (
   res.json({ token });
 };
 
+// getCurrent перевірка, чи юзер залогінений
+
 export const getCurrentController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const token: string = await authService.getCurrent(
+  const result: ILoginResponce = await authService.getCurrent(
     (req as AuthenticatedRequest).user
   );
-  res.json({ token });
+
+  const token = result.token;
+  const user = result.user;
+
+  res.json({ token, user });
 };
+
+// User change Password
 
 export const changePasswordController = async (
   req: Request,
@@ -141,6 +154,8 @@ export const changePasswordController = async (
   });
 };
 
+// User change Email
+
 export const changeEmailController = async (
   req: Request,
   res: Response
@@ -157,6 +172,8 @@ export const changeEmailController = async (
   });
 };
 
+// User Logout
+
 export const logoutController = async (
   req: Request,
   res: Response
@@ -167,6 +184,8 @@ export const logoutController = async (
     message: "Logout successfully",
   });
 };
+
+// User delete Account
 
 export const deleteAccountController = async (
   req: Request,
@@ -180,3 +199,35 @@ export const deleteAccountController = async (
     message: "User delete successfully",
   });
 };
+
+// export const loginController = async (
+//   req: Request,
+//   res: Response
+// ): Promise<void> => {
+//   await validateBody(loginSchema, req.body);
+
+//   // const token: string = await authService.login(req.body);
+//   // res.json({ token });
+
+//   const { token, refreshToken } = await authService.login(req.body);
+
+//   res.cookie("refreshToken", refreshToken, {
+//     httpOnly: true, // захищено від JS
+//     secure: true, // лише по HTTPS
+//     sameSite: "strict",
+//     path: "/",
+//     expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 днів
+//   });
+
+//   res.json({ token });
+// };
+
+// export const getCurrentController = async (
+//   req: Request,
+//   res: Response
+// ): Promise<void> => {
+//   const token: string = await authService.getCurrent(
+//     (req as AuthenticatedRequest).user
+//   );
+//   res.json({ token });
+// };
