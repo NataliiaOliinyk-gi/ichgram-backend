@@ -24,6 +24,12 @@ export const loginSchema = Yup.object({
 
 export type LoginSchema = Yup.InferType<typeof loginSchema>;
 
+export const resendVerifyEmailSchema = Yup.object({
+  email: emailSchema,
+}).noUnknown(true, ({ unknown }) => `Unknown field: ${unknown}`);
+
+export type ResendVerifyEmailSchema = Yup.InferType<typeof resendVerifyEmailSchema>;
+
 export const forgotPasswordSchema = Yup.object({
   email: emailSchema,
 }).noUnknown(true, ({ unknown }) => `Unknown field: ${unknown}`);

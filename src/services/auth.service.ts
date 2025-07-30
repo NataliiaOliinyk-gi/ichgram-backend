@@ -17,6 +17,7 @@ import {
   RegisterSchema,
   VerifyCodeSchema,
   LoginSchema,
+  ResendVerifyEmailSchema,
   ForgotPasswordSchema,
   ChangePasswordSchema,
   ChangeEmailSchema,
@@ -48,7 +49,13 @@ export const register = async (
   const verifyEmail = {
     to: [user.email],
     subject: "Verify email",
-    html: `<a href="${FRONTEND_URL}?verificationCode=${verificationCode}" target="_blank">Click verify email</a>`,
+    html: `
+    <p>Hello ${user.fullName},</p>
+    <p>Thank you for registering with <strong>Ichgram</strong>.</p>
+    <p>Please confirm your email address by clicking the link below:</p>
+    <p><strong><a href="${FRONTEND_URL}?verificationCode=${verificationCode}" target="_blank">Confirm Email</a></strong></p>
+    <p>If you did not sign up for this account, you can safely ignore this email.</p>
+  `,
   };
   await sendEmail(verifyEmail);
 
@@ -67,6 +74,37 @@ export const verify = async (code: VerifyCodeSchema): Promise<void> => {
   await user.save();
 };
 
+// resend verify Email
+
+export const resendVerifyEmail = async ({
+  email,
+}: ResendVerifyEmailSchema): Promise<UserDocument> => {
+  const userFind: IUserFind = {
+    email,
+  };
+  const user: UserDocument | null = await User.findOne(userFind);
+  if (!user) throw HttpExeption(401, `User with email ${email} not found`);
+
+  const verificationCode = nanoid();
+  user.verificationCode = verificationCode;
+  await user.save();
+
+  const resendVerifyEmail = {
+    to: [user.email],
+    subject: "Resend Verify email",
+    html: `
+    <p>Hello ${user.fullName},</p>
+    <p>You recently requested a new confirmation link for your <strong>Ichgram</strong> account.</p>
+    <p>Please confirm your email address by clicking the link below:</p>
+    <p><strong><a href="${FRONTEND_URL}?verificationCode=${verificationCode}" target="_blank">Confirm Email</a></strong></p>
+    <p>If you already verified your email or did not request this link, you can safely ignore this message.</p>
+  `,
+  };
+  await sendEmail(resendVerifyEmail);
+
+  return user;
+};
+
 // User Login
 
 export const login = async ({
@@ -78,6 +116,8 @@ export const login = async ({
   };
   const user: UserDocument | null = await User.findOne(userFind);
   if (!user) throw HttpExeption(401, `User with email ${email} not found`);
+
+  if (!user.verify) throw HttpExeption(401, `Email not verified`);
 
   const passwordCompare: boolean = await bcrypt.compare(
     password,

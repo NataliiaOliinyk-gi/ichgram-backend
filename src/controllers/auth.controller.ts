@@ -9,6 +9,7 @@ import {
   registerSchema,
   verifyCodeSchema,
   loginSchema,
+  resendVerifyEmailSchema,
   forgotPasswordSchema,
   changePasswordSchema,
   changeEmailSchema,
@@ -44,13 +45,31 @@ export const registerController = async (
 
 // Verify Email
 
-export const verifyController = async (req: Request, res: Response): Promise<void> => {
+export const verifyController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   await validateBody(verifyCodeSchema, req.body);
   await authService.verify(req.body.code);
 
   res.json({
     message:
       "Email successfully verified. \nPlease login with your credentials.",
+  });
+};
+
+// resend verify Email
+
+export const resendVerifyEmailController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  await validateBody(resendVerifyEmailSchema, req.body);
+
+  const result: UserDocument = await authService.resendVerifyEmail(req.body);
+
+  res.json({
+    message: `We've sent a new confirmation link to ${result.email}. Please check your inbox to complete the verification.`,
   });
 };
 
@@ -79,7 +98,6 @@ export const loginController = async (
   res.json({ token, user });
 };
 
-
 // User forgot Password
 
 export const forgotPasswordController = async (
@@ -91,8 +109,7 @@ export const forgotPasswordController = async (
   const result: UserDocument = await authService.forgotPassword(req.body);
 
   res.json({
-    message:
-      `An email ${result.email} with a temporary password has been sent. Please follow the instructions in the email.`,
+    message: `An email ${result.email} with a temporary password has been sent. Please follow the instructions in the email.`,
   });
 };
 
