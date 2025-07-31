@@ -6,6 +6,7 @@ import notFoundHandler from "./middlewares/notFoundHandler";
 import errorHandler from "./middlewares/errorHandler";
 
 import authRouter from "./routers/auth.router";
+import myProfileRouter from "./routers/myProfile.router";
 import usersRouter from "./routers/users.router";
 
 const startServer = (): void => {
@@ -16,7 +17,9 @@ const startServer = (): void => {
   app.use(cookieParser());
 
   app.use("/api/auth", authRouter);
+  app.use("/api/me", myProfileRouter)
   app.use("/api/users", usersRouter);
+  // "/api/posts" - роут для постів
 
   app.use(notFoundHandler);
   app.use(errorHandler);

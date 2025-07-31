@@ -4,6 +4,7 @@ export const toPublicUserResponse = (
   user: UserDocument
 ): PublicUserResponse => {
   const {
+    _id,
     email,
     fullName,
     username,
@@ -15,6 +16,7 @@ export const toPublicUserResponse = (
   } = user;
 
   return {
+    _id: _id.toString(),
     email,
     fullName,
     username,
