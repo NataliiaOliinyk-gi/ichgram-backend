@@ -28,6 +28,19 @@ export interface ILoginResponce {
   };
 }
 
+export interface ICurrentResponce {
+  token: string;
+  refreshToken?: string;
+  user: {
+    email: string;
+    fullName: string;
+    username: string;
+    profilePhoto?: string,
+    biography?: string;
+    website?: string;
+  };
+}
+
 // User Register
 
 export const registerController = async (
@@ -143,7 +156,7 @@ export const getCurrentController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const result: ILoginResponce = await authService.getCurrent(
+  const result: ICurrentResponce = await authService.getCurrent(
     (req as AuthenticatedRequest).user
   );
 

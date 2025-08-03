@@ -13,12 +13,12 @@ interface IUpdateUser {
   file: Express.Multer.File | undefined;
 }
 
-export const getMyProfile = async (
- { _id }: UserDocument
-): Promise<PublicUserResponse> => {
+export const getMyProfile = async ({
+  _id,
+}: UserDocument): Promise<PublicUserResponse> => {
   const user: UserDocument | null = await User.findById(_id);
   if (!user) throw HttpExeption(401, `User not found`);
-  
+
   const responceUser = toPublicUserResponse(user);
   return responceUser;
 };
@@ -39,8 +39,9 @@ export const updateMyProfile = async (
     user.profilePhoto = image;
   }
   if (payload.fullName) user.fullName = payload.fullName;
-  if (payload.biography) user.biography = payload.biography;
   if (payload.username) user.username = payload.username;
+  if (payload.biography !== undefined) user.biography = payload.biography;
+  if (payload.website !== undefined) user.website = payload.website;
 
   await user.save();
 

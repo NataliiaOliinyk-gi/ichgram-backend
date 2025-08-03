@@ -12,7 +12,10 @@ import sendEmail from "../utils/sendEmail";
 import generateRandomPassword from "../utils/generatePassword";
 
 import { UserDocument } from "../db/models/User";
-import { ILoginResponce } from "../controllers/auth.controller";
+import {
+  ILoginResponce,
+  ICurrentResponce,
+} from "../controllers/auth.controller";
 import {
   RegisterSchema,
   VerifyCodeSchema,
@@ -200,7 +203,7 @@ export const refreshToken = async (
 
 export const getCurrent = async (
   user: UserDocument
-): Promise<ILoginResponce> => {
+): Promise<ICurrentResponce> => {
   const token: string = createToken(user);
   const refreshToken: string = createRefreshToken(user);
   user.token = token;
@@ -213,6 +216,9 @@ export const getCurrent = async (
       email: user.email,
       fullName: user.fullName,
       username: user.username,
+      profilePhoto: user.profilePhoto,
+      biography: user.biography,
+      website: user.website,
     },
   };
 };

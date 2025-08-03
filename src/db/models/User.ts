@@ -12,7 +12,7 @@ interface IUser {
   refreshToken?: string;
   biography?: string;
   profilePhoto?: string;
-  webseite?: string;
+  website?: string;
   verificationCode?: string;
   verify: boolean;
   createdAt?: Date;
@@ -55,6 +55,9 @@ const UserSchema = new Schema<IUser>(
       type: String,
     },
     biography: {
+      type: String,
+    },
+    website: {
       type: String,
     },
     profilePhoto: {
