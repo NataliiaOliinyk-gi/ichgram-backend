@@ -12,8 +12,6 @@ export const toPublicUserResponse = (
     profilePhoto,
     website,
     verify,
-    createdAt,
-    updatedAt,
   } = user;
 
   return {
@@ -25,7 +23,5 @@ export const toPublicUserResponse = (
     profilePhoto,
     website,
     verify,
-    createdAt,
-    updatedAt,
   };
 };

@@ -15,8 +15,6 @@ interface IUser {
   website?: string;
   verificationCode?: string;
   verify: boolean;
-  createdAt?: Date;
-  updatedAt?: Date;
 }
 
 export type UserDocument = IUser & Document<Types.ObjectId>;

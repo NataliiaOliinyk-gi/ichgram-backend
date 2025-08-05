@@ -8,6 +8,7 @@ import errorHandler from "./middlewares/errorHandler";
 import authRouter from "./routers/auth.router";
 import myProfileRouter from "./routers/myProfile.router";
 import usersRouter from "./routers/users.router";
+import postsRouter from "./routers/posts.router";
 
 const startServer = (): void => {
   const app: Express = express();
@@ -19,7 +20,8 @@ const startServer = (): void => {
   app.use("/api/auth", authRouter);
   app.use("/api/me", myProfileRouter)
   app.use("/api/users", usersRouter);
-  // "/api/posts" - роут для постів
+  app.use("/api/posts", postsRouter);
+
 
   app.use(notFoundHandler);
   app.use(errorHandler);
