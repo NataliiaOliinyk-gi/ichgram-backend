@@ -2,8 +2,7 @@ import { Schema, model, Document, Types } from "mongoose";
 
 import { handleSaveError, setUpdateSettings } from "../hooks";
 
-interface IPost {
-    // userId: typeof Schema.Types.ObjectId;
+ interface IPost { 
   userId: Types.ObjectId;
   text: string;
   photo: string;
