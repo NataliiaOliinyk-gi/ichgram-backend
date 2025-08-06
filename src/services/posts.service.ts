@@ -18,10 +18,6 @@ interface IUpdatePost {
   payload?: UpdatePostSchema;
   file?: Express.Multer.File | undefined;
 }
-// interface IUpdatePost {
-//   text?: string;
-//   file?: Express.Multer.File | undefined;
-// }
 
 export const addPost = async (
   { payload, file }: IAddPost,
