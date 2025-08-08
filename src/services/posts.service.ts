@@ -1,4 +1,5 @@
 import { unlink } from "node:fs/promises";
+import { SortOrder } from "mongoose";
 
 import Post from "../db/models/Post";
 import User from "../db/models/User";
@@ -44,7 +45,9 @@ export const addPost = async (
 };
 
 export const getPosts = (): Promise<PostDocument[]> =>
-  Post.find().populate("userId", "username fullName profilePhoto");
+  Post.find()
+    .populate("userId", "username fullName profilePhoto")
+    .sort({ createdAt: -1 });
 
 export const getMyPosts = async ({
   _id,
@@ -52,10 +55,11 @@ export const getMyPosts = async ({
   const user: UserDocument | null = await User.findById(_id);
   if (!user) throw HttpExeption(404, `User not found`);
 
-  return await Post.find({ userId: _id }).populate(
-    "userId",
-    "username fullName profilePhoto"
-  );
+  const result = await Post.find({ userId: _id })
+    .populate("userId", "username fullName profilePhoto")
+    .sort({ createdAt: -1 });
+
+  return result;
 };
 
 export const getPostsByUser = async (id: string): Promise<PostDocument[]> => {
