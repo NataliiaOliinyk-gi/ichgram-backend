@@ -30,10 +30,10 @@ export const addPost = async (
   if (file) {
     const { url: image } = await cloudinary.uploader.upload(file.path, {
       folder: "ichgram",
-      use_filename: true,
+      use_filename: true, // не переименовывать файл, не обязательная настройка
     });
+    await unlink(file.path); // удалить файл из папки temp
     photo = image;
-    await unlink(file.path);
   }
 
   return await Post.create<PostDocument>({
