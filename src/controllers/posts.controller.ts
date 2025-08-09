@@ -29,7 +29,7 @@ export const getPostsController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const result: PostDocument[] = await postsService.getPosts();
+  const result: PostDocument[] = await postsService.getPosts((req as AuthenticatedRequest).user);
 
   res.json(result);
 };

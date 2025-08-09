@@ -44,10 +44,18 @@ export const addPost = async (
   });
 };
 
-export const getPosts = (): Promise<PostDocument[]> =>
-  Post.find()
+export const getPosts = async ({
+  _id,
+}: UserDocument): Promise<PostDocument[]> => {
+  const user: UserDocument | null = await User.findById(_id);
+  if (!user) throw HttpExeption(404, `User not found`);
+
+  const result = await Post.find({ userId: { $ne: _id } })
     .populate("userId", "username fullName profilePhoto")
     .sort({ createdAt: -1 });
+
+  return result;
+};
 
 export const getMyPosts = async ({
   _id,
