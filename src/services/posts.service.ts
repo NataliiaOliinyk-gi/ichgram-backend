@@ -52,7 +52,7 @@ export const getPosts = async ({
 
   const result = await Post.find({ userId: { $ne: _id } })
     .populate("userId", "username fullName profilePhoto")
-    .sort({ createdAt: -1 });
+    .sort({ updatedAt: -1 });
 
   return result;
 };
@@ -65,7 +65,7 @@ export const getMyPosts = async ({
 
   const result = await Post.find({ userId: _id })
     .populate("userId", "username fullName profilePhoto")
-    .sort({ createdAt: -1 });
+    .sort({ updatedAt: -1 });
 
   return result;
 };
@@ -74,10 +74,9 @@ export const getPostsByUser = async (id: string): Promise<PostDocument[]> => {
   const user: UserDocument | null = await User.findById(id);
   if (!user) throw HttpExeption(401, `User not found`);
 
-  return await Post.find({ userId: id }).populate(
-    "userId",
-    "username fullName profilePhoto"
-  );
+  return await Post.find({ userId: id })
+    .populate("userId", "username fullName profilePhoto")
+    .sort({ updatedAt: -1 });
 };
 
 export const getPostById = async (id: string): Promise<PostDocument> => {
