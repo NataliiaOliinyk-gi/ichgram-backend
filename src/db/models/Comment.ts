@@ -31,15 +31,8 @@ const CommentSchema = new Schema<IComment>(
 );
 
 // --- Indexes ---
-// 1) Коментарі конкретного поста (нові зверху)
+//  Коментарі конкретного поста (нові зверху)
 CommentSchema.index({ postId: 1, createdAt: -1 }, { name: "post_date" });
-// 2) Коментарі користувача (історія активності)
-CommentSchema.index({ userId: 1, createdAt: -1 }, { name: "user_date" });
-// 3) (Опціонально) пошук по тексту коментарів
-CommentSchema.index(
-  { text: "text" },
-  { name: "text_search", default_language: "none" }
-);
 
 CommentSchema.post("save", handleSaveError);
 CommentSchema.pre("findOneAndUpdate", setUpdateSettings);
@@ -48,3 +41,12 @@ CommentSchema.post("findOneAndUpdate", handleSaveError);
 const Comment = model<IComment>("comment", CommentSchema);
 
 export default Comment;
+
+// --- Indexes --- додатково
+// 2) Коментарі користувача (історія активності)
+// CommentSchema.index({ userId: 1, createdAt: -1 }, { name: "user_date" });
+// 3) (Опціонально) пошук по тексту коментарів
+// CommentSchema.index(
+//   { text: "text" },
+//   { name: "text_search", default_language: "none" }
+// );
