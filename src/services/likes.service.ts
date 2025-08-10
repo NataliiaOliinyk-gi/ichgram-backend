@@ -21,24 +21,31 @@ export const toggleLike = async (
   const post = await Post.findById(postId);
   if (!post) throw HttpExeption(404, `Post with id=${postId} not found`);
 
-  // Перевірка, чи лайк уже є
-  const existingLike = await Like.findOne({ postId, userId });
+  // спроба зняти лайк
+  const del = await Like.deleteOne({ postId, userId });
 
-  // Якщо є — видаляємо
-  if (existingLike) {
-    await Like.deleteOne({ _id: existingLike._id });
-    const likesCount = await Like.countDocuments({ postId });
-    return { liked: false, likesCount };
+  if (del.deletedCount === 1) {
+    // було — зняли → декремент
+    const updated = await Post.findByIdAndUpdate(
+      postId,
+      { $inc: { likesCount: -1 } },
+      { new: true, projection: { likesCount: 1 }, timestamps: false }
+    );
+    return { liked: false, likesCount: updated!.likesCount };
   }
 
-  // Якщо немає — створюємо
-  await Like.create({
-    userId,
+  // не було — ставимо (ідемпотентно з унікальним індексом)
+  try {
+    await Like.create({ postId, userId });
+  } catch (error: any) {
+    if (error?.code !== 11000) throw error; // якщо дубль — ідемо далі
+  }
+
+  const updated = await Post.findByIdAndUpdate(
     postId,
-  });
-  const likesCount = await Like.countDocuments({ postId });
-  return {
-    liked: true,
-    likesCount,
-  };
+    { $inc: { likesCount: 1 } },
+    { new: true, projection: { likesCount: 1 }, timestamps: false }
+  );
+
+  return { liked: true, likesCount: updated!.likesCount };
 };

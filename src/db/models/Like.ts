@@ -27,11 +27,14 @@ const LikeSchema = new Schema<ILike>(
 
 // --- Indexes ---
 // 1) Забороняє дублікати лайка від того ж користувача на той самий пост
-LikeSchema.index({ postId: 1, userId: 1 }, { unique: true, name: "uniq_post_user" });
-// 2) Швидкі вибірки всіх лайків поста (наприклад, для $in по списку постів)
-LikeSchema.index({ postId: 1 }, { name: "by_post" });
-// 3) Швидко дістати всі лайки користувача (наприклад, для профілю)
-LikeSchema.index({ userId: 1 }, { name: "by_user" });
+LikeSchema.index(
+  { postId: 1, userId: 1 },
+  { unique: true, name: "uniq_post_user" }
+);
+// 2) для фіда (distinct по постах юзера)
+LikeSchema.index({ userId: 1, postId: 1 }, { name: "by_user_post" });
+// 3) для списока лайків поста в порядку часу
+LikeSchema.index({ postId: 1, createdAt: -1 }, { name: "by_post_date" });
 
 LikeSchema.post("save", handleSaveError);
 LikeSchema.pre("findOneAndUpdate", setUpdateSettings);

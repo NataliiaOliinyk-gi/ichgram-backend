@@ -2,7 +2,6 @@ import { unlink } from "node:fs/promises";
 
 import Post from "../db/models/Post";
 import User from "../db/models/User";
-import Like from "../db/models/Like";
 
 import HttpExeption from "../utils/HttpExeption";
 import cloudinary from "../utils/cloudinary";

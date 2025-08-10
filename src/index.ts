@@ -1,4 +1,5 @@
 import "dotenv/config";
+// import runMigrations from "./utils/runMigrations";
 
 import connectDatabase from "./db/connectDatabase";
 import startServer from "./server";
