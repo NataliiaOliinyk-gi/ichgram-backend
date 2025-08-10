@@ -1,14 +1,20 @@
 import { unlink } from "node:fs/promises";
-import { SortOrder } from "mongoose";
 
 import Post from "../db/models/Post";
 import User from "../db/models/User";
+import Like from "../db/models/Like";
+
 import HttpExeption from "../utils/HttpExeption";
 import cloudinary from "../utils/cloudinary";
+import markPostsWithUserLikes from "../utils/markPostsWithUserLikes";
 
 import { UserDocument } from "../db/models/User";
-import { PostDocument } from "../db/models/Post";
+import { PostDocument, IPostForLean } from "../db/models/Post";
 import { AddPostSchema, UpdatePostSchema } from "../validation/posts.schema";
+
+export interface IPostResponse extends IPostForLean {
+  isLikedByCurrentUser: boolean;
+}
 
 interface IAddPost {
   payload: AddPostSchema;
@@ -37,50 +43,65 @@ export const addPost = async (
     photo = image;
   }
 
-  return await Post.create<PostDocument>({
+  const post = await Post.create({
     userId: _id,
     text: payload.text,
     photo,
   });
+
+  return post;
 };
 
 export const getPosts = async ({
   _id,
-}: UserDocument): Promise<PostDocument[]> => {
+}: UserDocument): Promise<IPostResponse[]> => {
   const user: UserDocument | null = await User.findById(_id);
   if (!user) throw HttpExeption(404, `User not found`);
 
-  const result = await Post.find({ userId: { $ne: _id } })
+  const posts = await Post.find({ userId: { $ne: _id } })
     .populate("userId", "username fullName profilePhoto")
-    .sort({ updatedAt: -1 });
+    .sort({ updatedAt: -1 })
+    .select("userId text photo likesCount commentsCount createdAt updatedAt")
+    .lean<IPostForLean[]>();
 
-  return result;
+  return await markPostsWithUserLikes(posts, _id);
 };
 
 export const getMyPosts = async ({
   _id,
-}: UserDocument): Promise<PostDocument[]> => {
+}: UserDocument): Promise<IPostResponse[]> => {
   const user: UserDocument | null = await User.findById(_id);
   if (!user) throw HttpExeption(404, `User not found`);
 
-  const result = await Post.find({ userId: _id })
+  const posts = await Post.find({ userId: _id })
     .populate("userId", "username fullName profilePhoto")
-    .sort({ updatedAt: -1 });
+    .sort({ updatedAt: -1 })
+    .select("userId text photo likesCount commentsCount createdAt updatedAt")
+    .lean<IPostForLean[]>();
 
-  return result;
+  return await markPostsWithUserLikes(posts, _id);
 };
 
-export const getPostsByUser = async (id: string): Promise<PostDocument[]> => {
+export const getPostsByUser = async (
+  id: string,
+  currentUser: UserDocument
+): Promise<IPostResponse[]> => {
   const user: UserDocument | null = await User.findById(id);
   if (!user) throw HttpExeption(401, `User not found`);
 
-  return await Post.find({ userId: id })
+  const posts = await Post.find({ userId: id })
     .populate("userId", "username fullName profilePhoto")
-    .sort({ updatedAt: -1 });
+    .sort({ updatedAt: -1 })
+    .select("userId text photo likesCount commentsCount createdAt updatedAt")
+    .lean<IPostForLean[]>();
+
+  return await markPostsWithUserLikes(posts, currentUser._id);
 };
 
 export const getPostById = async (id: string): Promise<PostDocument> => {
-  const post: PostDocument | null = await Post.findById(id);
+  const post: PostDocument | null = await Post.findById(id).select(
+    "userId text photo likesCount commentsCount createdAt updatedAt"
+  );
   if (!post) throw HttpExeption(404, `Post not found`);
 
   return post;
@@ -94,7 +115,9 @@ export const updatePost = async (
   const user: UserDocument | null = await User.findById(_id);
   if (!user) throw HttpExeption(404, `User not found`);
 
-  const post: PostDocument | null = await Post.findById(id);
+  const post: PostDocument | null = await Post.findById(id).select(
+    "userId text photo likesCount commentsCount createdAt updatedAt"
+  );
   if (!post) throw HttpExeption(404, `Post not found`);
 
   if (!post.userId.equals(_id))

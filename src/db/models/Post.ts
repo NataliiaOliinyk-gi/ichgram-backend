@@ -2,10 +2,18 @@ import { Schema, model, Document, Types } from "mongoose";
 
 import { handleSaveError, setUpdateSettings } from "../hooks";
 
- interface IPost { 
+interface IPost {
   userId: Types.ObjectId;
   text: string;
   photo: string;
+  likesCount: number;
+  commentsCount: number;
+}
+
+export interface IPostForLean extends IPost {
+  _id: Types.ObjectId;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export type PostDocument = IPost & Document<Types.ObjectId>;
@@ -25,6 +33,14 @@ const PostSchema = new Schema<IPost>(
       type: String,
       required: true,
       match: /\.(jpg|jpeg|png|webp|gif)$/i,
+    },
+    likesCount: {
+      type: Number,
+      default: 0,
+    },
+    commentsCount: {
+      type: Number,
+      default: 0,
     },
   },
   { versionKey: false, timestamps: true }

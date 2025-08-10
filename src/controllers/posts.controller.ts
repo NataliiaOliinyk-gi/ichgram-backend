@@ -7,6 +7,7 @@ import validateBody from "../utils/validateBody";
 import { addPostSchema, updatePostSchema } from "../validation/posts.schema";
 import { PostDocument } from "../db/models/Post";
 import { AuthenticatedRequest } from "../typescript/interfaces";
+import { IPostResponse } from "../services/posts.service";
 
 export const addPostController = async (
   req: Request,
@@ -29,7 +30,7 @@ export const getPostsController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const result: PostDocument[] = await postsService.getPosts((req as AuthenticatedRequest).user);
+  const result: IPostResponse[] = await postsService.getPosts((req as AuthenticatedRequest).user);
 
   res.json(result);
 };
@@ -38,7 +39,7 @@ export const getMyPostsController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const result: PostDocument[] = await postsService.getMyPosts(
+  const result: IPostResponse[] = await postsService.getMyPosts(
     (req as AuthenticatedRequest).user
   );
 
@@ -50,7 +51,7 @@ export const getPostsByUserController = async (
   res: Response
 ): Promise<void> => {
   const { id } = req.params;
-  const result: PostDocument[] = await postsService.getPostsByUser(id);
+  const result: IPostResponse[] = await postsService.getPostsByUser(id, (req as AuthenticatedRequest).user);
 
   res.json(result);
 };

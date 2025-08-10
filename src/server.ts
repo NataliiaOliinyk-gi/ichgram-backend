@@ -9,6 +9,9 @@ import authRouter from "./routers/auth.router";
 import myProfileRouter from "./routers/myProfile.router";
 import usersRouter from "./routers/users.router";
 import postsRouter from "./routers/posts.router";
+import followRouter from "./routers/follow.router";
+import commentsRouter from "./routers/comments.router";
+import likesRouter from "./routers/likes.router";
 
 const startServer = (): void => {
   const app: Express = express();
@@ -18,10 +21,12 @@ const startServer = (): void => {
   app.use(cookieParser());
 
   app.use("/api/auth", authRouter);
-  app.use("/api/me", myProfileRouter)
+  app.use("/api/me", myProfileRouter);
   app.use("/api/users", usersRouter);
   app.use("/api/posts", postsRouter);
-
+  app.use("/api/follow", followRouter);
+  app.use("/api/comments", commentsRouter);
+  app.use("/api/likes", likesRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
