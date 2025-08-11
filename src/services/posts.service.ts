@@ -160,3 +160,83 @@ export const deletePost = async (
 
   return post;
 };
+
+export const getExplorePosts = async (
+  { _id }: UserDocument,
+  count: number
+): Promise<IPostResponse[]> => {
+  const currentUser: UserDocument | null = await User.findById(_id);
+  if (!currentUser) throw HttpExeption(404, `User not found`);
+
+  const pipeline: any[] = [
+    // 1) не показуємо власні пости
+    { $match: { userId: { $ne: _id } } },
+
+    // (коли додаси підписки — можна ще виключити тих, на кого підписаний)
+    // { $match: { userId: { $nin: followedUserIds } } },
+
+    // 2) випадкові
+    { $sample: { size: count } },
+
+    // 3) підтягнути автора
+    {
+      $lookup: {
+        from: "users",
+        localField: "userId",
+        foreignField: "_id",
+        as: "user",
+        pipeline: [{ $project: { username: 1, profilePhoto: 1 } }],
+      },
+    },
+    { $unwind: "$user" },
+
+    // 4) прапор "лайкнув чи ні поточний user"
+    {
+      $lookup: {
+        from: "likes",
+        let: { postId: "$_id", userId: _id },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$postId", "$$postId"] },
+                  { $eq: ["$userId", "$$userId"] },
+                ],
+              },
+            },
+          },
+          { $limit: 1 },
+        ],
+        as: "likedByMe",
+      },
+    },
+    {
+      $addFields: {
+        isLikedByCurrentUser: { $gt: [{ $size: "$likedByMe" }, 0] },
+      },
+    },
+
+    // 5) віддати рівно те, що треба фронту
+    {
+      $project: {
+        _id: 1,
+        text: 1,
+        photo: 1,
+        likesCount: 1,
+        commentsCount: 1,
+        createdAt: 1,
+        updatedAt: 1,
+        userId: {
+          _id: "$user._id",
+          username: "$user.username",
+          profilePhoto: "$user.profilePhoto",
+        },
+        isLikedByCurrentUser: 1,
+      },
+    },
+  ];
+
+  const items = await Post.aggregate<IPostResponse>(pipeline).exec();
+  return items;
+};

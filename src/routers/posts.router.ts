@@ -10,10 +10,12 @@ import {
   getPostByIdController,
   updatePostController,
   deletePostController,
+  getExplorePostsController,
 } from "../controllers/posts.controller";
 
 const postsRouter: Router = Router();
 
+postsRouter.get("/explore", authenticate, getExplorePostsController);
 postsRouter.post("/", authenticate, upload.single("photo"), addPostController);
 postsRouter.get("/", authenticate, getPostsController);
 postsRouter.get("/my", authenticate, getMyPostsController);
@@ -21,5 +23,6 @@ postsRouter.get("/user/:id", authenticate, getPostsByUserController);
 postsRouter.get("/:id", authenticate, getPostByIdController);
 postsRouter.put("/:id", authenticate, upload.single("photo"), updatePostController);
 postsRouter.delete("/:id", authenticate, deletePostController);
+
 
 export default postsRouter;

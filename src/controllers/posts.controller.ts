@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import * as postsService from "../services/posts.service";
 
 import validateBody from "../utils/validateBody";
+// import parsePaginationParams from "../utils/parsePaginationParams";
 
 import { addPostSchema, updatePostSchema } from "../validation/posts.schema";
 import { PostDocument } from "../db/models/Post";
@@ -94,6 +95,18 @@ export const deletePostController = async (
     id,
     (req as AuthenticatedRequest).user
   );
+
+  res.json(result);
+};
+
+
+export const getExplorePostsController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  // const { limit } = parsePaginationParams(req.query);
+  const count = 30;
+  const result = await postsService.getExplorePosts((req as AuthenticatedRequest).user, count);
 
   res.json(result);
 };
