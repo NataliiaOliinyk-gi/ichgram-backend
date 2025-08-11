@@ -55,8 +55,6 @@ export const deleteCommentByIdController = async (
   res.json(result);
 };
 
-// export const getCommentByPostIdController = ()=>{};
-
 export const getCommentByPostIdController = async (
   req: Request,
   res: Response
@@ -71,17 +69,4 @@ export const getCommentByPostIdController = async (
 
   res.json(result);
 };
-
-// GET /api/comments/post/:postId?page=1&limit=20
-// export const getCommentByPostIdController = async (req: Request, res: Response): Promise<void> => {
-//   const { postId } = req.params as { postId: string };
-
-//   const page = Math.max(1, Number(req.query.page) || 1);
-//   const limitRaw = Number(req.query.limit) || 20;
-//   const limit = Math.min(Math.max(1, limitRaw), 50); // [1..50]
-
-//   const result = await commentsService.getCommentsByPostId(postId, { page, limit });
-
-//   res.json(result);
-// };
 
