@@ -1,5 +1,6 @@
 import Comment from "../db/models/Comment";
 import Post from "../db/models/Post";
+import Notification from "../db/models/Notification";
 
 import HttpExeption from "../utils/HttpExeption";
 
@@ -16,8 +17,8 @@ export const addCommentByPostId = async (
   payload: AddCommentSchema,
   { _id: userId }: UserDocument
 ): Promise<CommentDocument> => {
-  const exists = await Post.exists({ _id: postId });
-  if (!exists) throw HttpExeption(404, "Post not found");
+  const post = await Post.findById({ _id: postId });
+  if (!post) throw HttpExeption(404, "Post not found");
 
   const comment = await Comment.create({ postId, userId, text: payload.text });
 
@@ -30,6 +31,15 @@ export const addCommentByPostId = async (
 
   // підтягуємо автора
   await comment.populate("userId", "username fullName profilePhoto");
+
+  // створюємо повідомлення
+  await Notification.create({
+    recipientId: post.userId, // автор поста
+    senderId: userId,
+    type: "comment",
+    postId: postId,
+    commentId: comment._id,
+  });
 
   return comment;
 };

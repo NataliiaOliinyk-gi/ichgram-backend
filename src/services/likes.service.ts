@@ -1,6 +1,8 @@
 import Like from "../db/models/Like";
 import User from "../db/models/User";
 import Post from "../db/models/Post";
+import Notification from "../db/models/Notification";
+
 import HttpExeption from "../utils/HttpExeption";
 
 import { UserDocument } from "../db/models/User";
@@ -25,7 +27,7 @@ export const toggleLike = async (
   const del = await Like.deleteOne({ postId, userId });
 
   if (del.deletedCount === 1) {
-    // було — зняли → декремент
+    // було — зняли => віднімаємо від лічильника
     const updated = await Post.findByIdAndUpdate(
       postId,
       { $inc: { likesCount: -1 } },
@@ -34,18 +36,25 @@ export const toggleLike = async (
     return { liked: false, likesCount: updated!.likesCount };
   }
 
-  // не було — ставимо (ідемпотентно з унікальним індексом)
+  // не було — ставимо (з унікальним індексом)
   try {
     await Like.create({ postId, userId });
   } catch (error: any) {
     if (error?.code !== 11000) throw error; // якщо дубль — ідемо далі
   }
-
+  // додаємо до лічильника
   const updated = await Post.findByIdAndUpdate(
     postId,
     { $inc: { likesCount: 1 } },
     { new: true, projection: { likesCount: 1 }, timestamps: false }
   );
 
+  // створюємо повідомлення
+  await Notification.create({
+    recipientId: post.userId, // автор поста
+    senderId: userId, // хто лайкнув
+    type: "like",
+    postId: postId,
+  });
   return { liked: true, likesCount: updated!.likesCount };
 };

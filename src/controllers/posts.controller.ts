@@ -31,7 +31,9 @@ export const getPostsController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const result: IPostResponse[] = await postsService.getPosts((req as AuthenticatedRequest).user);
+  const result: IPostResponse[] = await postsService.getPosts(
+    (req as AuthenticatedRequest).user
+  );
 
   res.json(result);
 };
@@ -52,7 +54,10 @@ export const getPostsByUserController = async (
   res: Response
 ): Promise<void> => {
   const { id } = req.params;
-  const result: IPostResponse[] = await postsService.getPostsByUser(id, (req as AuthenticatedRequest).user);
+  const result: IPostResponse[] = await postsService.getPostsByUser(
+    id,
+    (req as AuthenticatedRequest).user
+  );
 
   res.json(result);
 };
@@ -99,14 +104,16 @@ export const deletePostController = async (
   res.json(result);
 };
 
-
 export const getExplorePostsController = async (
   req: Request,
   res: Response
 ): Promise<void> => {
   // const { limit } = parsePaginationParams(req.query);
   const count = 30;
-  const result = await postsService.getExplorePosts((req as AuthenticatedRequest).user, count);
+  const result = await postsService.getExplorePosts(
+    (req as AuthenticatedRequest).user,
+    count
+  );
 
   res.json(result);
 };

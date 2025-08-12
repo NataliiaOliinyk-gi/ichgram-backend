@@ -1,7 +1,6 @@
-import mongoose from "mongoose";
-
 import Follow from "../db/models/Follow";
 import User from "../db/models/User";
+import Notification from "../db/models/Notification";
 
 import HttpExeption from "../utils/HttpExeption";
 import getFreshFollowCounts from "../utils/getFreshFollowCounts";
@@ -39,6 +38,12 @@ export const followUser = async (
       { $inc: { followingCount: 1 } },
       { timestamps: false }
     );
+    // створюємо повідомлення
+    await Notification.create({
+      recipientId: targetId, // юзер на якого підписалися
+      senderId: me, // поточний юзер
+      type: "follow",
+    });
   } catch (error: any) {
     if (error?.code !== 11000) throw error; // ігноруємо дублікати
   }
