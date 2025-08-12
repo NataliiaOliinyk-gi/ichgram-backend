@@ -2,6 +2,7 @@ import { unlink } from "node:fs/promises";
 
 import Post from "../db/models/Post";
 import User from "../db/models/User";
+import Follow from "../db/models/Follow";
 
 import HttpExeption from "../utils/HttpExeption";
 import cloudinary from "../utils/cloudinary";
@@ -57,12 +58,23 @@ export const getPosts = async ({
   const user: UserDocument | null = await User.findById(_id);
   if (!user) throw HttpExeption(404, `User not found`);
 
-  const posts = await Post.find({ userId: { $ne: _id } })
+  const followingIds = await Follow.distinct("followingId", {
+    followerId: _id,
+  });
+
+  // або від підписок мінус свої, або від всіх мінус свої
+  const filter =
+    followingIds.length > 0
+      ? { userId: { $in: followingIds, $ne: _id } }
+      : { userId: { $ne: _id } };
+
+  const posts = await Post.find(filter)
     .populate("userId", "username fullName profilePhoto")
     .sort({ updatedAt: -1 })
     .select("userId text photo likesCount commentsCount createdAt updatedAt")
     .lean<IPostForLean[]>();
 
+  // прапор лайку
   return await markPostsWithUserLikes(posts, _id);
 };
 
@@ -168,17 +180,20 @@ export const getExplorePosts = async (
   const currentUser: UserDocument | null = await User.findById(_id);
   if (!currentUser) throw HttpExeption(404, `User not found`);
 
+  // на кого підписаний
+  const followingIds = await Follow.distinct("followingId", { followerId: _id });
+
   const pipeline: any[] = [
-    // 1) не показуємо власні пости
+    // не показуємо власні пости
     { $match: { userId: { $ne: _id } } },
 
     // (коли додаси підписки — можна ще виключити тих, на кого підписаний)
-    // { $match: { userId: { $nin: followedUserIds } } },
+    { $match: { userId: { $nin: followingIds } } },
 
-    // 2) випадкові
+    // випадкові
     { $sample: { size: count } },
 
-    // 3) підтягнути автора
+    // підтягнути автора
     {
       $lookup: {
         from: "users",
@@ -190,7 +205,7 @@ export const getExplorePosts = async (
     },
     { $unwind: "$user" },
 
-    // 4) прапор "лайкнув чи ні поточний user"
+    // прапор "лайкнув чи ні поточний user"
     {
       $lookup: {
         from: "likes",
@@ -217,7 +232,7 @@ export const getExplorePosts = async (
       },
     },
 
-    // 5) віддати рівно те, що треба фронту
+    // віддати фронтенду
     {
       $project: {
         _id: 1,
