@@ -12,6 +12,8 @@ export const toPublicUserResponse = (
     profilePhoto,
     website,
     verify,
+    followersCount,
+    followingCount,
   } = user;
 
   return {
@@ -23,5 +25,7 @@ export const toPublicUserResponse = (
     profilePhoto,
     website,
     verify,
+    followersCount,
+    followingCount,
   };
 };

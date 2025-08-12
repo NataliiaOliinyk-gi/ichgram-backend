@@ -105,10 +105,11 @@ PUT /api/notifications/:id — позначити як прочитане
 
 Follow / Unfollow
 
-POST /api/users/:id/follow — підписатись
-DELETE /api/users/:id/follow — відписатись
-GET /api/users/:id/followers — список підписників
-GET /api/users/:id/following — список на кого підписаний
+
+POST   /api/follow/:targetId     // підписатися
+DELETE /api/follow/:targetId     // відписатися
+GET    /api/users/:id/followers  // список фоловерів (пагінація)
+GET    /api/users/:id/following  // список підписок (пагінація)
 
 Messaging (приватні повідомлення) (опційно)
 

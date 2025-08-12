@@ -1,10 +1,14 @@
 import { Router } from "express";
 
 import { authenticate } from "../middlewares/authorization";
-import { addFollowController } from "../controllers/follow.controller";
+import {
+  followUserController,
+  unfollowUserController,
+} from "../controllers/follow.controller";
 
 const followRouter: Router = Router();
 
-followRouter.post("/", authenticate, addFollowController);
+followRouter.post("/:targetId", authenticate, followUserController);
+followRouter.delete("/:targetId", authenticate, unfollowUserController);
 
 export default followRouter;

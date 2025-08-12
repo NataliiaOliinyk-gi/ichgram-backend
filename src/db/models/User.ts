@@ -15,6 +15,8 @@ interface IUser {
   website?: string;
   verificationCode?: string;
   verify: boolean;
+  followersCount: number;
+  followingCount: number;
 }
 
 export type UserDocument = IUser & Document<Types.ObjectId>;
@@ -68,6 +70,14 @@ const UserSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
       required: true,
+    },
+    followersCount: {
+      type: Number,
+      default: 0,
+    },
+    followingCount: {
+      type: Number,
+      default: 0,
     },
   },
   { versionKey: false, timestamps: true }
