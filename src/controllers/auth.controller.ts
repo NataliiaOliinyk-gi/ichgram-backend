@@ -32,6 +32,7 @@ export interface ICurrentResponce {
   token: string;
   refreshToken?: string;
   user: {
+    _id: string;
     email: string;
     fullName: string;
     username: string;

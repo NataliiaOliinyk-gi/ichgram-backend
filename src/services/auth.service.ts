@@ -213,6 +213,7 @@ export const getCurrent = async (
   return {
     token,
     user: {
+      _id: user.id,
       email: user.email,
       fullName: user.fullName,
       username: user.username,

@@ -10,8 +10,8 @@ import { UserDocument } from "../db/models/User";
 
 export interface IFollowStatus {
   following: boolean;
-  targetFollowersCount?: number;
-  meFollowingCount?: number;
+  targetFollowersCount: number;
+  meFollowingCount: number;
 }
 
 export const followUser = async (
