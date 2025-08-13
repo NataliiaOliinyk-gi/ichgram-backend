@@ -3,6 +3,7 @@ import { unlink } from "node:fs/promises";
 import Post from "../db/models/Post";
 import User from "../db/models/User";
 import Follow from "../db/models/Follow";
+import Like from "../db/models/Like";
 
 import HttpExeption from "../utils/HttpExeption";
 import cloudinary from "../utils/cloudinary";
@@ -109,13 +110,21 @@ export const getPostsByUser = async (
   return await markPostsWithUserLikes(posts, currentUser._id);
 };
 
-export const getPostById = async (id: string): Promise<PostDocument> => {
-  const post: PostDocument | null = await Post.findById(id).select(
-    "userId text photo likesCount commentsCount createdAt updatedAt"
-  );
+export const getPostById = async (
+  id: string,
+  { _id: me }: UserDocument
+): Promise<PostDocument> => {
+  const post: PostDocument | null = await Post.findById(id)
+    .populate("userId", "username fullName profilePhoto")
+    .select("userId text photo likesCount commentsCount createdAt updatedAt");
+
   if (!post) throw HttpExeption(404, `Post not found`);
 
-  return post;
+  // let isLikedByCurrentUser = false;
+  // const exists = await Like.exists({ postId: post._id, userId: me });
+  // isLikedByCurrentUser = Boolean(exists);
+
+  return post
 };
 
 export const updatePost = async (
@@ -181,7 +190,9 @@ export const getExplorePosts = async (
   if (!currentUser) throw HttpExeption(404, `User not found`);
 
   // на кого підписаний
-  const followingIds = await Follow.distinct("followingId", { followerId: _id });
+  const followingIds = await Follow.distinct("followingId", {
+    followerId: _id,
+  });
 
   const pipeline: any[] = [
     // не показуємо власні пости

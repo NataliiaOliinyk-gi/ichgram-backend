@@ -28,6 +28,7 @@ export const getNotifications = async (
 
   const notifications = await Notification.find({
     recipientId: _id,
+    senderId: { $ne: _id },
     isRead: false,
   })
     .skip(skip)

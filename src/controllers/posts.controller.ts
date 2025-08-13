@@ -67,7 +67,10 @@ export const getPostByIdController = async (
   res: Response
 ): Promise<void> => {
   const { id } = req.params;
-  const result = await postsService.getPostById(id);
+  const result = await postsService.getPostById(
+    id,
+    (req as AuthenticatedRequest).user
+  );
 
   res.json(result);
 };
