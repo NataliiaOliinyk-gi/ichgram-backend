@@ -1,20 +1,11 @@
-**authRouter**
-
+**authRouter** `/api/auth`
 - все, що стосується авторизації і конфіденційної інформації:
 
-  `/api/auth`
-
-  - POST `/register`
-    - email
-    - fullName
-    - username
-    - password
-
-  - POST `/login`
-    - email
-    - password
-
-    `/forgot-password`
+  - POST `/api/auth/register` реєстрація
+  - POST `/api/auth/login` логін
+  - POST `/api/auth/verify` верифікація пошти
+  - POST `/api/auth/resend-verify-email` повторний запит на надсилання листа для підтвердження пошти
+  - POST `/api/auth/forgot-password` запит на скидування пароля
 
   - POST `/refresh-token`
 
