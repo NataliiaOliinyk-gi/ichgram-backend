@@ -10,11 +10,12 @@ import User from "../db/models/User";
 const runMigrations = async () => {
   console.log("➡ Running one-time migrations...");
 
-  await User.updateMany(
-  { followersCount: { $exists: false } },
-  { $set: { followersCount: 0, followingCount: 0 } },
-  { timestamps: false }
-);
+  await User.syncIndexes()
+//   await User.updateMany(
+//   { followersCount: { $exists: false } },
+//   { $set: { followersCount: 0, followingCount: 0 } },
+//   { timestamps: false }
+// );
 
 console.log("✅ Migrations finished.");
 

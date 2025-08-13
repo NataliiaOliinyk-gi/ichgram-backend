@@ -83,6 +83,10 @@ const UserSchema = new Schema<IUser>(
   { versionKey: false, timestamps: true }
 );
 
+// індекси
+UserSchema.index({ username: 1 }, { name: "by_username" });
+UserSchema.index({ fullName: 1 }, { name: "by_fullName" });
+
 UserSchema.post("save", handleSaveError);
 UserSchema.pre("findOneAndUpdate", setUpdateSettings);
 UserSchema.post("findOneAndUpdate", handleSaveError);
