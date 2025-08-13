@@ -32,7 +32,7 @@ export const searchUsers = async (
   const currentUser = await User.findById(currentUserId);
   if (!currentUser) throw HttpExeption(404, "User not found");
 
-  const rx = `^${escapeRegex(q)}`; // префіксний пошук (користується індексом)
+  const rx = escapeRegex(q); // префіксний пошук (користується індексом)
 
   const matchStage: any = {
     $and: [
