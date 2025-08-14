@@ -5,7 +5,6 @@ import parsePaginationParams from "../utils/parsePaginationParams";
 import HttpExeption from "../utils/HttpExeption";
 
 import { AuthenticatedRequest } from "../typescript/interfaces";
-import { IUserResponse } from "../services/users.service";
 
 export const searchUsersController = async (
   req: Request,
@@ -30,7 +29,7 @@ export const getUserByIdController = async (
   res: Response
 ): Promise<void> => {
   const { id } = req.params;
-  const result: IUserResponse = await usersService.getUserById(
+  const result = await usersService.getUserById(
     id,
     (req as AuthenticatedRequest).user
   );
@@ -38,7 +37,45 @@ export const getUserByIdController = async (
   res.json(result);
 };
 
-export const getUsersController = ()=>{};
+export const getUsersController = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
+  const users = await usersService.getUsersService(
+    (req as AuthenticatedRequest).user
+  );
 
-export const getFollowersController = () => {};
-export const getFollowingController = () => {};
+  res.json(users);
+};
+
+export const getFollowersController = async (req: Request, res: Response) => {
+  const me = (req as AuthenticatedRequest).user;
+  const targetId = req.params.id ?? me._id.toString();
+
+  const { page, limit } = parsePaginationParams(req.query);
+
+  const result = await usersService.getFollowers({
+    targetUserId: targetId,
+    currentUserId: me._id,
+    page,
+    limit,
+  });
+
+  res.json(result);
+};
+
+export const getFollowingController = async (req: Request, res: Response) => {
+  const me = (req as AuthenticatedRequest).user;
+  const targetId = req.params.id ?? me._id.toString();
+
+  const { page, limit } = parsePaginationParams(req.query);
+
+  const result = await usersService.getFollowing({
+    targetUserId: targetId,
+    currentUserId: me._id,
+    page,
+    limit,
+  });
+
+  res.json(result);
+};

@@ -18,7 +18,7 @@ const parsePaginationParams = (
   query: IPaginationQuery
 ): { page: number; limit: number } => {
   const page = parseNumber(query.page, 1);
-  const limit = parseNumber(query.limit, 10);
+  const limit = parseNumber(query.limit, 20);
 
   return {
     page,

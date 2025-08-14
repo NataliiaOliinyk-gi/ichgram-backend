@@ -70,13 +70,23 @@ export const getPosts = async ({
       : { userId: { $ne: _id } };
 
   const posts = await Post.find(filter)
-    .populate("userId", "username fullName profilePhoto")
+    .populate("userId", "username fullName profilePhoto followersCount")
     .sort({ updatedAt: -1 })
     .select("userId text photo likesCount commentsCount createdAt updatedAt")
     .lean<IPostForLean[]>();
 
   // прапор лайку
-  return await markPostsWithUserLikes(posts, _id);
+  const withLikes = await markPostsWithUserLikes(posts, _id);
+
+  //прапор підписки на автора
+  const followingSet = new Set(followingIds.map(String));
+  const result = withLikes.map((post) => ({
+    ...post,
+    isAuthorFollowedByCurrentUser:
+      followingSet.size > 0 && followingSet.has(String(post.userId._id)), // автор у сеті моїх підписок
+  }));
+
+  return result;
 };
 
 export const getMyPosts = async ({
@@ -107,24 +117,43 @@ export const getPostsByUser = async (
     .select("userId text photo likesCount commentsCount createdAt updatedAt")
     .lean<IPostForLean[]>();
 
-  return await markPostsWithUserLikes(posts, currentUser._id);
+  // return await markPostsWithUserLikes(posts, currentUser._id);
+  // прапор лайку
+  const withLikes = await markPostsWithUserLikes(posts, currentUser._id);
+
+  //прапор підписки на автора
+  const followingIds = await Follow.distinct("followingId", {
+    followerId: currentUser._id,
+  });
+  const followingSet = new Set(followingIds.map(String));
+  const result = withLikes.map((post) => ({
+    ...post,
+    isAuthorFollowedByCurrentUser:
+      followingSet.size > 0 && followingSet.has(String(post.userId._id)), // автор у сеті моїх підписок
+  }));
+
+  return result;
 };
 
 export const getPostById = async (
   id: string,
   { _id: me }: UserDocument
-): Promise<PostDocument> => {
-  const post: PostDocument | null = await Post.findById(id)
+): Promise<IPostResponse> => {
+  const post = await Post.findById(id)
     .populate("userId", "username fullName profilePhoto")
-    .select("userId text photo likesCount commentsCount createdAt updatedAt");
+    .select("userId text photo likesCount commentsCount createdAt updatedAt")
+    .lean<IPostForLean>();
 
   if (!post) throw HttpExeption(404, `Post not found`);
 
-  // let isLikedByCurrentUser = false;
-  // const exists = await Like.exists({ postId: post._id, userId: me });
-  // isLikedByCurrentUser = Boolean(exists);
+  let isLikedByCurrentUser = false;
+  const exists = await Like.exists({ postId: post._id, userId: me });
+  isLikedByCurrentUser = Boolean(exists);
 
-  return post
+  return {
+    ...post,
+    isLikedByCurrentUser: Boolean(exists),
+  };
 };
 
 export const updatePost = async (
@@ -197,13 +226,10 @@ export const getExplorePosts = async (
   const pipeline: any[] = [
     // не показуємо власні пости
     { $match: { userId: { $ne: _id } } },
-
     // (виключити тих, на кого підписаний)
     { $match: { userId: { $nin: followingIds } } },
-
     // випадкові
     { $sample: { size: count } },
-
     // підтягнути автора
     {
       $lookup: {
@@ -215,7 +241,6 @@ export const getExplorePosts = async (
       },
     },
     { $unwind: "$user" },
-
     // прапор "лайкнув чи ні поточний user"
     {
       $lookup: {
@@ -242,7 +267,6 @@ export const getExplorePosts = async (
         isLikedByCurrentUser: { $gt: [{ $size: "$likedByMe" }, 0] },
       },
     },
-
     // віддати фронтенду
     {
       $project: {
