@@ -10,6 +10,7 @@ export interface INotificationsQuery {
   page: number;
   limit: number;
 }
+
 export interface IGetNotificationsResponse {
   notifications: NotificationDocument[];
   page: number;

@@ -13,6 +13,7 @@ import followRouter from "./routers/follow.router";
 import commentsRouter from "./routers/comments.router";
 import likesRouter from "./routers/likes.router";
 import notificationsRouter from "./routers/notifications.router";
+import chatsRouter from "./routers/chats.router";
 
 const startServer = (): void => {
   const app: Express = express();
@@ -29,6 +30,7 @@ const startServer = (): void => {
   app.use("/api/comments", commentsRouter);
   app.use("/api/likes", likesRouter);
   app.use("/api/notifications", notificationsRouter);
+  app.use("/api/chats", chatsRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

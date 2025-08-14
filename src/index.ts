@@ -3,6 +3,7 @@ import "dotenv/config";
 
 import connectDatabase from "./db/connectDatabase";
 import startServer from "./server";
+import startWebsocketServer from "./wsServer";
 
 const bootstrap = async (): Promise<void> => {
   await connectDatabase();
@@ -19,6 +20,8 @@ const bootstrap = async (): Promise<void> => {
 
 
   startServer();
+  startWebsocketServer();
+  
 };
 
 bootstrap();

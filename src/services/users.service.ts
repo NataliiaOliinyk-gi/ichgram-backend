@@ -140,3 +140,12 @@ export const getUserById = async (
     isFollowedByCurrentUser,
   };
 };
+
+
+// export const getUsers = async ({
+//   _id,
+// }: UserDocument): Promise<IUserResponse[]> =>{
+
+//   const result = await User.find();
+//  
+// };

@@ -38,5 +38,7 @@ export const getUserByIdController = async (
   res.json(result);
 };
 
+export const getUsersController = ()=>{};
+
 export const getFollowersController = () => {};
 export const getFollowingController = () => {};
