@@ -6,7 +6,6 @@ import {
 } from "../constants/user.constants";
 
 export const passwordSchema = Yup.string()
-  .trim()
   .matches(passwordValidation.value, passwordValidation.message)
   .required();
 

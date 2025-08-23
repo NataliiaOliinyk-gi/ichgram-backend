@@ -6,7 +6,7 @@ export const emailValidation: ValidationType = {
 };
 
 export const passwordValidation: ValidationType = {
-  value: /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d])[A-Za-z\d\S]+$/,
+  value: /^(?=.*[A-Za-z])(?=.*\d)(?=.*[^A-Za-z\d])\S{6,64}$/,
   message:
-    "Password must contains at least 1 letter, 1 number and 1 special symbol",
+    "Password must be 6-64 characters and include 1 letter, 1 number and 1 special symbol",
 };
